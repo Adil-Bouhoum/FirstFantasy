@@ -3,6 +3,9 @@ import Inventory.Inventory;
 import Inventory.Items.Item;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+
 
 public abstract class GameCharacter implements IGameCharacter {
     protected String name;
@@ -12,6 +15,8 @@ public abstract class GameCharacter implements IGameCharacter {
     protected Image idleImage;
     protected String characterType;
     private Inventory<Item> inventory = new Inventory<>(10);
+    protected ICharacterAnimator animator;
+
 
     public GameCharacter(String name, int HP, int attack, int defense, int magicDamage, String characterType) {
         this.name = name;
@@ -22,6 +27,7 @@ public abstract class GameCharacter implements IGameCharacter {
         this.magicDamage = magicDamage;
         this.characterType = characterType;
         this.characterView = new ImageView();
+        this.animator = new CharacterAnimator(characterType);
         loadAssets();
     }
 
@@ -42,16 +48,6 @@ public abstract class GameCharacter implements IGameCharacter {
         }
     }
 
-    @Override
-    public ImageView getCharacterView() {
-        return characterView;
-    }
-
-    @Override
-    public void playIdleAnimation() {
-        // For now, just ensure the idle image is set
-        characterView.setImage(idleImage);
-    }
 
     public String getName() {
         return name;
@@ -101,5 +97,23 @@ public abstract class GameCharacter implements IGameCharacter {
             item.use(this);
             inventory.removeItem(item);
         }
+    }
+
+    //Animation Stuff
+    @Override
+    public ImageView getCharacterView() {
+        return animator.getImageView();
+    }
+
+    public void playIdleAnimation() {
+        animator.playIdle();
+    }
+
+    public void playAttackAnimation() {
+        animator.playAttack();
+    }
+
+    public void playHurtAnimation() {
+        animator.playHurt();
     }
 }

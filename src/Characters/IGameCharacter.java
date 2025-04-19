@@ -1,6 +1,7 @@
 package Characters;
 import Inventory.Items.Item;
 import Inventory.Inventory;
+import javafx.scene.image.ImageView;
 
 public interface IGameCharacter extends IAnimatable {
     String getName();

@@ -31,6 +31,7 @@ import javafx.scene.control.ListView;
 import javafx.scene.paint.Color;
 import javafx.scene.text.TextAlignment;
 
+import java.net.URL;
 
 
 public class Game extends Application implements IGameUI {
@@ -156,6 +157,7 @@ public class Game extends Application implements IGameUI {
         centerBox.setAlignment(Pos.CENTER);
 
         // Player side
+        player.playIdleAnimation();
         VBox playerBox = new VBox(15);
         playerBox.setAlignment(Pos.CENTER);
         ImageView playerImageView = player.getCharacterView();
@@ -163,6 +165,7 @@ public class Game extends Application implements IGameUI {
         playerBox.getChildren().addAll(new Label(player.getName()), playerImageView, playerStatsLabel);
 
         // Enemy side
+        enemy.playIdleAnimation();
         VBox enemyBox = new VBox(15);
         enemyBox.setAlignment(Pos.CENTER);
         ImageView enemyImageView = new ImageView();
@@ -348,6 +351,9 @@ public class Game extends Application implements IGameUI {
     }
 
     public static void main(String[] args) {
+        System.out.println("Testing resource loading:");
+        URL testResource = Game.class.getResource("/characters/mage/idle_1.png");
+        System.out.println("Found idle_1.png: " + (testResource != null));
         launch(args);
     }
 }
