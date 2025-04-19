@@ -54,7 +54,7 @@ public class BattleSystem implements IBattleSystem {
         } else if (actionChoice == 2) {
             damage = attacker.specialAbility(usesMagic);
             defender.takeDamage(damage);
-            System.out.println(attacker.getName() + " uses special ability for " + damage + " damage to " + defender.getName());
+            attacker.specialAbilityPhrase();
         } else {
             System.out.println(attacker.getName() + " skipped their turn.");
         }

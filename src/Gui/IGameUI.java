@@ -8,4 +8,6 @@ public interface IGameUI {
     void disableButtons();
     void showVictoryScreen(String winner);
     void showDefeatScreen();
+    void showInventory();
+    void returnToMainMenu(); // Add this new method
 }

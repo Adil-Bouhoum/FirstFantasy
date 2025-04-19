@@ -1,18 +1,58 @@
 package Characters;
+import Inventory.Inventory;
+import Inventory.Items.Item;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 
 public abstract class GameCharacter implements IGameCharacter {
     protected String name;
     protected int HP, maxHP, attack, defense;
     protected int magicDamage;
+    protected ImageView characterView;
+    protected Image idleImage;
+    protected String characterType;
+    private Inventory<Item> inventory = new Inventory<>(10);
 
-    public GameCharacter(String name, int HP, int attack, int defense, int magicDamage) {
+    public GameCharacter(String name, int HP, int attack, int defense, int magicDamage, String characterType) {
         this.name = name;
         this.HP = HP;
         this.maxHP = HP;
         this.attack = attack;
         this.defense = defense;
         this.magicDamage = magicDamage;
+        this.characterType = characterType;
+        this.characterView = new ImageView();
+        loadAssets();
     }
+
+    @Override
+    public void loadAssets() {
+        String basePath = "/resources/characters/" + characterType + "/";
+        try {
+            idleImage = new Image(getClass().getResourceAsStream(basePath + "idle.png"));
+
+            // Set default image
+            characterView.setImage(idleImage);
+            characterView.setFitHeight(200);
+            characterView.setFitWidth(150);
+            characterView.setPreserveRatio(true);
+        } catch (Exception e) {
+            System.err.println("Failed to load character assets: " + e.getMessage());
+            // Fallback to a placeholder image if available
+        }
+    }
+
+    @Override
+    public ImageView getCharacterView() {
+        return characterView;
+    }
+
+    @Override
+    public void playIdleAnimation() {
+        // For now, just ensure the idle image is set
+        characterView.setImage(idleImage);
+    }
+
     public String getName() {
         return name;
     }
@@ -50,5 +90,16 @@ public abstract class GameCharacter implements IGameCharacter {
 
     public void heal(int amount) {
         HP = Math.min(HP + amount, maxHP);
+    }
+
+    public Inventory<Item> getInventory() {
+        return inventory;
+    }
+
+    public void useItem(Item item) {
+        if (inventory.contains(item)) {
+            item.use(this);
+            inventory.removeItem(item);
+        }
     }
 }

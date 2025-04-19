@@ -8,14 +8,14 @@ import Characters.Cleric;
 import Characters.Barbarian;
 import Battle.IBattleManager;
 import Battle.BattleManagerImpl;
+import Inventory.Inventory;
+import Inventory.Items.*;
 
 import javafx.application.Application;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.ScrollPane;
+import javafx.scene.control.*;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
@@ -23,7 +23,15 @@ import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
+import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.collections.FXCollections;
+import javafx.scene.control.ListView;
+import javafx.scene.paint.Color;
+import javafx.scene.text.TextAlignment;
+
+
 
 public class Game extends Application implements IGameUI {
 
@@ -117,6 +125,10 @@ public class Game extends Application implements IGameUI {
                 break;
         }
 
+        //Starter Items
+        player.getInventory().addItem(new HealthPotion(30));
+        player.getInventory().addItem(new HealthPotion(30));
+
         // Create enemy
         enemy = new Barbarian("Goblin");
 
@@ -146,9 +158,7 @@ public class Game extends Application implements IGameUI {
         // Player side
         VBox playerBox = new VBox(15);
         playerBox.setAlignment(Pos.CENTER);
-        ImageView playerImageView = new ImageView();
-        playerImageView.setFitHeight(200);
-        playerImageView.setFitWidth(150);
+        ImageView playerImageView = player.getCharacterView();
         playerStatsLabel = new Label(getStatsDisplay(player));
         playerBox.getChildren().addAll(new Label(player.getName()), playerImageView, playerStatsLabel);
 
@@ -186,19 +196,18 @@ public class Game extends Application implements IGameUI {
         HBox actionBox = new HBox(20);
         actionBox.setAlignment(Pos.CENTER);
 
-        Button attackButton = new Button("Normal Attack");
-        attackButton.setPrefWidth(120);
+        Button attackButton = new Button("Attack");
+        Button specialButton = new Button("Special");
+        Button inventoryButton = new Button("Inventory");  // New button
+        Button skipButton = new Button("Skip");
+
+        // Set button actions
         attackButton.setOnAction(e -> battleManager.performAttack());
-
-        Button specialButton = new Button("Special Ability");
-        specialButton.setPrefWidth(120);
         specialButton.setOnAction(e -> battleManager.performSpecialAbility());
-
-        Button skipButton = new Button("Skip Turn");
-        skipButton.setPrefWidth(120);
+        inventoryButton.setOnAction(e -> battleManager.showInventory());  // Connect to manager
         skipButton.setOnAction(e -> battleManager.skipTurn());
 
-        actionBox.getChildren().addAll(attackButton, specialButton, skipButton);
+        actionBox.getChildren().addAll(attackButton, specialButton, inventoryButton, skipButton);
 
         root.setBottom(actionBox);
         BorderPane.setMargin(actionBox, new Insets(20, 0, 0, 0));
@@ -210,6 +219,46 @@ public class Game extends Application implements IGameUI {
     private String getStatsDisplay(IGameCharacter character) {
         return "HP: " + character.getHP() + "\n";
     }
+
+    public void showInventory() {
+        Stage inventoryStage = new Stage();
+        inventoryStage.initModality(Modality.APPLICATION_MODAL); // Block main window
+        inventoryStage.setTitle("Inventory");
+
+        ListView<Item> itemList = new ListView<>();
+        itemList.setItems(FXCollections.observableArrayList(player.getInventory().getItems()));
+
+        // Display item details
+        Label detailLabel = new Label();
+        itemList.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
+            if (newVal != null) {
+                detailLabel.setText(newVal.getDescription());
+            }
+        });
+
+        // Use button
+        Button useButton = new Button("Use Item");
+        useButton.setOnAction(e -> {
+            Item selected = itemList.getSelectionModel().getSelectedItem();
+            if (selected != null) {
+                battleManager.useItem(selected);  // Call through battle manager
+                itemList.setItems(FXCollections.observableArrayList(player.getInventory().getItems()));
+            }
+        });
+
+        VBox layout = new VBox(10);
+        layout.getChildren().addAll(
+                new Label("Select an item to use:"),
+                itemList,
+                detailLabel,
+                useButton
+        );
+        layout.setPadding(new Insets(15));
+
+        inventoryStage.setScene(new Scene(layout, 300, 400));
+        inventoryStage.showAndWait(); // Wait until closed
+    }
+
 
     @Override
     public void updateBattleUI() {
@@ -244,16 +293,58 @@ public class Game extends Application implements IGameUI {
 
     @Override
     public void showVictoryScreen(String winner) {
-        appendToBattleLog(enemy.getName() + " is defeated!");
-        disableButtons();
-        // Could expand with a proper victory screen
+        BorderPane victoryPane = new BorderPane();
+        victoryPane.setPadding(new Insets(20));
+        victoryPane.setStyle("-fx-background-color: linear-gradient(to bottom, #000000, #003300);");
+
+        // Victory message
+        Label victoryLabel = new Label("VICTORY!\n" + winner + " has won the battle!");
+        victoryLabel.setFont(Font.font("Arial", FontWeight.BOLD, 32));
+        victoryLabel.setTextFill(Color.GOLD);
+        victoryLabel.setTextAlignment(TextAlignment.CENTER);
+        victoryLabel.setAlignment(Pos.CENTER);
+
+        // Return to menu button
+        Button menuButton = new Button("Return to Main Menu");
+        menuButton.setStyle("-fx-font-size: 16; -fx-padding: 10 20;");
+        menuButton.setOnAction(e -> returnToMainMenu());
+
+        VBox centerBox = new VBox(30, victoryLabel, menuButton);
+        centerBox.setAlignment(Pos.CENTER);
+        victoryPane.setCenter(centerBox);
+
+        Scene victoryScene = new Scene(victoryPane, 800, 600);
+        primaryStage.setScene(victoryScene);
     }
 
     @Override
     public void showDefeatScreen() {
-        appendToBattleLog("Game Over! You have been defeated.");
-        disableButtons();
-        // Could expand with a proper defeat screen
+        BorderPane defeatPane = new BorderPane();
+        defeatPane.setPadding(new Insets(20));
+        defeatPane.setStyle("-fx-background-color: linear-gradient(to bottom, #000000, #330000);");
+
+        // Defeat message
+        Label defeatLabel = new Label("DEFEAT!\nYou have been vanquished...");
+        defeatLabel.setFont(Font.font("Arial", FontWeight.BOLD, 32));
+        defeatLabel.setTextFill(Color.RED);
+        defeatLabel.setTextAlignment(TextAlignment.CENTER);
+        defeatLabel.setAlignment(Pos.CENTER);
+
+        Button menuButton = new Button("Return to Main Menu");
+        menuButton.setStyle("-fx-font-size: 16; -fx-padding: 10 20;");
+        menuButton.setOnAction(e -> returnToMainMenu());
+
+        VBox centerBox = new VBox(30, defeatLabel, menuButton);
+        centerBox.setAlignment(Pos.CENTER);
+        defeatPane.setCenter(centerBox);
+
+        Scene defeatScene = new Scene(defeatPane, 800, 600);
+        primaryStage.setScene(defeatScene);
+    }
+
+    @Override
+    public void returnToMainMenu() {
+        showCharacterSelection();
     }
 
     public static void main(String[] args) {

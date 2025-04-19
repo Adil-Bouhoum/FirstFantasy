@@ -1,6 +1,8 @@
 package Characters;
+import Inventory.Items.Item;
+import Inventory.Inventory;
 
-public interface IGameCharacter {
+public interface IGameCharacter extends IAnimatable {
     String getName();
     int getHP();
     int getDefense();
@@ -9,4 +11,7 @@ public interface IGameCharacter {
     int attackEnemy(boolean isMagic);
     void heal(int amount);
     int specialAbility(boolean isMagic);
+    String specialAbilityPhrase();
+    Inventory<Item> getInventory();
+    void useItem(Item item);
 }

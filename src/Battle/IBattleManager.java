@@ -1,6 +1,8 @@
 package Battle;
 
 import Characters.IGameCharacter;
+import Inventory.Inventory;
+import Inventory.Items.Item;
 
 public interface IBattleManager {
     void initializeBattle(IGameCharacter player, IGameCharacter enemy, boolean playerUsesMagic);
@@ -11,4 +13,6 @@ public interface IBattleManager {
     void enemyTurn();
     boolean isBattleOver();
     IGameCharacter getWinner();
+    void showInventory();
+    void useItem(Item item);
 }
