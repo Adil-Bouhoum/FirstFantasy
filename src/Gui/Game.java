@@ -1,11 +1,6 @@
 package Gui;
 
-import Characters.GameCharacter;
-import Characters.IGameCharacter;
-import Characters.Mage;
-import Characters.Rogue;
-import Characters.Cleric;
-import Characters.Barbarian;
+import Characters.*;
 import Battle.IBattleManager;
 import Battle.BattleManagerImpl;
 import Inventory.Inventory;
@@ -131,7 +126,7 @@ public class Game extends Application implements IGameUI {
         player.getInventory().addItem(new HealthPotion(30));
 
         // Create enemy
-        enemy = new Barbarian("Goblin");
+        enemy = new Goblin("Goblin");
 
         // Initialize battle manager
         battleManager = new BattleManagerImpl(this, player, enemy, playerUsesMagic);
@@ -168,9 +163,8 @@ public class Game extends Application implements IGameUI {
         enemy.playIdleAnimation();
         VBox enemyBox = new VBox(15);
         enemyBox.setAlignment(Pos.CENTER);
-        ImageView enemyImageView = new ImageView();
-        enemyImageView.setFitHeight(200);
-        enemyImageView.setFitWidth(150);
+        enemy.playIdleAnimation();  // Make sure this is called
+        ImageView enemyImageView = enemy.getCharacterView();  // Use the character's view
         enemyStatsLabel = new Label(getStatsDisplay(enemy));
         enemyBox.getChildren().addAll(new Label(enemy.getName()), enemyImageView, enemyStatsLabel);
 

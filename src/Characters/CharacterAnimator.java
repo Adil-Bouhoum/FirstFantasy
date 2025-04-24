@@ -39,10 +39,12 @@ public class CharacterAnimator implements ICharacterAnimator {
     }
 
     private Image[] loadFrames(String characterType, String animName, int frameCount) {
+        System.out.println("Attempting to load frames for: " + characterType);
         Image[] frames = new Image[frameCount];
         for (int i = 0; i < frameCount; i++) {
             String path = String.format("/characters/%s/%s_%d.png",
                     characterType, animName, i+1);
+            System.out.println("Trying to load: " + path);
 
             try (InputStream stream = getClass().getResourceAsStream(path)) {
                 if (stream != null) {
